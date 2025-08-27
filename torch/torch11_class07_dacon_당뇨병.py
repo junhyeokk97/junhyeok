@@ -1,0 +1,128 @@
+import numpy as np
+import pandas as pd
+import torch.nn as nn
+import torch.optim as optim
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+import torch
+from sklearn.metrics import accuracy_score, r2_score
+from sklearn.datasets import load_breast_cancer
+import random
+USE_CUDA = torch.cuda.is_available()
+DEVICE = torch.device('cuda' if USE_CUDA else 'cpu')
+
+seed = 50
+random.seed(seed)
+np.random.seed(seed)
+
+path = './_data/dacon/diabetes/'
+train_csv = pd.read_csv(path + 'train.csv', index_col=0)
+test_csv = pd.read_csv(path + 'test.csv', index_col=0)
+submission_csv = pd.read_csv(path + 'sample_submission.csv')
+
+test_csv = test_csv.replace(0, np.nan)
+test_csv = test_csv.fillna(test_csv.mean())
+
+x = train_csv.drop(['Outcome'], axis=1)
+zero_na_columns = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
+x[zero_na_columns] = x[zero_na_columns].replace(0, np.nan)
+x = x.fillna(x.mean())
+y = train_csv['Outcome']
+
+
+print(x.shape ,y.shape)
+
+x_train, x_test, y_train, y_test = train_test_split(x,y,
+                                                    test_size=0.1,
+                                                    random_state=seed,
+                                                    stratify=y)
+
+
+scl = StandardScaler()
+x_train = scl.fit_transform(x_train)
+x_test = scl.transform(x_test)
+
+x_train = torch.tensor(x_train, dtype=torch.float32).to(DEVICE)
+x_test = torch.tensor(x_test, dtype=torch.float32).to(DEVICE)
+y_train = torch.tensor(y_train, dtype=torch.float32).unsqueeze(1).to(DEVICE)
+y_test = torch.tensor(y_test, dtype=torch.float32).unsqueeze(1).to(DEVICE)
+
+print(x_train.shape, y_train.shape)
+print(x_test.shape, y_test.shape)
+
+# model = nn.Sequential(nn.Linear(8,10),
+#                       nn.Linear(10,10),
+#                       nn.Linear(10,10),
+#                       nn.Linear(10,10),
+#                       nn.Linear(10,1),
+#                       ).to(DEVICE)
+
+class Model(nn.Module):
+    def __init__(self, input_dim, output_dim):
+        super().__init__()
+        # super(Model, self).__init__()       # nn.Module에 있는 Model과 self 다 쓰겠다.
+        ### 모델에 대한 정의 ###
+        self.linear1 = nn.Linear(input_dim, 64)
+        self.linear2 = nn.Linear(64, 32)
+        self.linear3 = nn.Linear(32, 16)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.2)
+        self.linear4 = nn.Linear(16, 8)
+        self.linear5 = nn.Linear(8, output_dim)
+        self.sigmoid = nn.Sigmoid()
+        
+
+        
+    def forward(self, x):       # 정의 구현
+        x = self.linear1(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.linear2(x)
+        x = self.relu(x)
+        x = self.linear3(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.linear4(x)
+        x = self.linear5(x)
+        x = self.sigmoid(x)
+        return x
+
+model = Model(8, 1).to(DEVICE)
+
+criterion = nn.BCELoss()
+optimizer = optim.Adam(model.parameters(),lr=0.005)
+
+def train(model,criterion,optimizer,x,y):
+    optimizer.zero_grad()
+    hypothesis = model(x)
+    loss=criterion(hypothesis,y)
+    loss.backward()
+    optimizer.step()
+    return loss.item()
+
+epochs=300
+for epoch in range(1 + epochs+1):
+    loss = train(model,criterion,optimizer,x_train,y_train)
+    print('epoch: {} loss: {}'.format(epoch,loss))
+print('####################')
+    
+def evaluate(model,criterion,x,y):
+    model.eval()
+    with torch.no_grad():
+       y_predict = model(x)
+       loss2 = criterion(y_predict, y)
+    return loss2.item()
+l_loss = evaluate(model,criterion,x_test,y_test)
+print('loss: ', l_loss)
+y_predict = model(x_test)
+y_predict = y_predict.detach().cpu().numpy()
+y_test = y_test.detach().cpu().numpy()                              
+
+
+y_predict = (y_predict > 0.5).astype(int)
+
+acc = accuracy_score(y_test, y_predict)
+print('acc: ', acc)
+
+# loss:  0.9798077940940857
+# acc:  0.7121212121212122
