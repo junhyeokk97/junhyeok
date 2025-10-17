@@ -1,0 +1,56 @@
+from sklearn.datasets import load_iris
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from xgboost import XGBClassifier
+import random
+import numpy as np
+from sklearn.model_selection import train_test_split
+import pandas as pd
+
+
+seed = 50
+random.seed(seed)
+np.random.seed(seed)
+
+datasets = load_iris()
+x= datasets.data
+y= datasets.target
+print(x.shape, y.shape)
+
+x_train, x_test, y_train, y_test = train_test_split(x,y,
+                                                    test_size=0.1,
+                                                    random_state=seed,
+                                                    stratify=y)
+
+model = XGBClassifier(random_state=seed)
+model.fit(x_train, y_train)
+print("=======", model.__class__.__name__, "=======")
+print('acc: ', model.score(x_test, y_test))
+print(model.feature_importances_)
+
+print(np.percentile(model.feature_importances_, 25))
+
+percentile = np.percentile(model.feature_importances_, 25)
+print(type(percentile))
+
+col_name=[]
+for i, fi in enumerate(model.feature_importances_):
+    # print(i, fi)
+    if fi <= percentile:
+        col_name.append(datasets.feature_names[i])
+    else:
+        continue
+print(col_name)
+
+x = pd.DataFrame(x, columns=datasets.feature_names)
+x = x.drop(columns=col_name)
+
+# print(x)
+
+x_train, x_test, y_train, y_test = train_test_split(x,y,
+                                                    test_size=0.1,
+                                                    random_state=seed,
+                                                    stratify=y)
+
+model.fit(x_train, y_train)
+print('acc: ', model.score(x_test, y_test))
