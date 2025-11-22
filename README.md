@@ -69,7 +69,7 @@
 ---
 ```
 ## 🧰 사용 기술
-언어: Python 3.9.7
+언어: Python 3.9.x
 머신러닝: scikit-learn
 딥러닝: TensorFlow/Keras, PyTorch
 데이터 처리: NumPy, Pandas
