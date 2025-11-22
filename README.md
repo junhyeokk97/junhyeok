@@ -56,7 +56,7 @@
 
 ## 📂 폴더 구성
 
-text
+'''text
 /
 ├─ AE/               # AutoEncoder 등 표현 학습 실습
 ├─ keras/            # Keras 기반 딥러닝 기초 실습
@@ -65,7 +65,7 @@ text
 ├─ python/           # 파이썬 기본 문법 실습
 ├─ python_import/    # 모듈/패키지 import 연습
 └─ torch/            # PyTorch 기반 딥러닝 실습
-
+'''
 ---
 
 ## 🧰 사용 기술
