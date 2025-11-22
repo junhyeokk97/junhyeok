@@ -2,7 +2,7 @@
 > Python 기초부터 Keras · PyTorch까지 공부하면서 정리하는 학습용 레포지토리입니다.
 
 <p align="left">
-<img src="https://img.shields.io/badge/Python-3.10+-blue.svg" />
+<img src="https://img.shields.io/badge/Python-3.9+-blue.svg" />
 <img src="https://img.shields.io/badge/ML-Scikit--learn%20%7C%20XGBoost%20%7C%20LightGBM-orange.svg" />
 <img src="https://img.shields.io/badge/DL-PyTorch%20%7C%20TensorFlow-red.svg" />
 <img src="https://img.shields.io/badge/Notebook-Jupyter-yellow.svg" />
