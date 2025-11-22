@@ -67,10 +67,11 @@
 └─ torch/            # PyTorch 기반 딥러닝 실습
 ```
 ---
-
+```
 ## 🧰 사용 기술
 언어: Python 3.9.7
 머신러닝: scikit-learn
 딥러닝: TensorFlow/Keras, PyTorch
 데이터 처리: NumPy, Pandas
 시각화: Matplotlib, Seaborn
+```
